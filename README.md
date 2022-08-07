@@ -10,10 +10,19 @@ JavaScript data validator, supporting custom asynchronous validation based on pr
  */
 const validator = new Validator({
   // Sync rules
-  nickname: { required: true, message: 'Nickname is requried' },
+  nickname: { 
+    required: true,
+    message: 'Nickname is requried'
+  },
   account: [
-    { required: true, message: "Account is required" },
-    { min: 6, message: 'Account must have more than 6 characters' },
+    { 
+      required: true, 
+      message: "Account is required"
+    },
+    { 
+      min: 6, 
+      message: 'Account must have more than 6 characters' 
+    },
     {
       validator (account: string) {
         return account.length <= 16; // max=16
