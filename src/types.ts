@@ -7,10 +7,8 @@ export interface Rule<T = any> {
   email: boolean;
   min: number;
   max: number;
-  range: [number, number];
   minLength: number;
   maxLength: number;
-  lengthRange: [number, number];
   step: number;
   equal: any;
   notEqual: any;
