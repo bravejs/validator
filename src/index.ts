@@ -4,7 +4,7 @@ import {
   RuleConfig,
   Rules,
   Valid,
-  ValidateError,
+  ValidationError,
 } from './types';
 import VALIDATORS from './validators';
 import { isFn, isObj } from './utils';
@@ -19,7 +19,7 @@ class Validator<T extends object> {
   validate<D extends Partial<T>>(data: D) {
     const { _rules } = this;
     const tasks: Promise<void>[] = [];
-    const errors: ValidateError<D>[] = [];
+    const errors: ValidationError<D>[] = [];
 
     const validate = <K extends keyof D>(
       field: K,
