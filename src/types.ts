@@ -19,7 +19,7 @@ export interface Rule<T = any> {
 export interface RuleConfig<T> extends Partial<Rule<T>> {
   message:
     | string
-    | ((param: Rule[keyof Rule], value: T, rule: keyof Rule) => string);
+    | ((rule: keyof Rule, param: Rule[keyof Rule], value: T) => string);
 }
 
 export type Rules<T extends object> = {
