@@ -50,13 +50,15 @@ class Validator<T extends object> {
               value,
               rule,
               param,
-              message: isFn(message) ? message(param, value, rule) : message,
+              message: isFn(message) ? message(rule, param, value) : message,
             });
           }
         };
 
         if (isObj(result)) {
-          isFn(result.then) && tasks.push(result.then(checkResult));
+          if (isFn(result.then)) {
+            tasks.push(result.then(checkResult));
+          }
         } else {
           checkResult(result);
         }
@@ -71,7 +73,9 @@ class Validator<T extends object> {
       };
 
       for (const dataKey in data) {
-        const config = (_rules as any)[dataKey];
+        const config: RuleConfig<any> | RuleConfig<any>[] = (_rules as any)[
+          dataKey
+        ];
 
         if (!config) {
           continue;
