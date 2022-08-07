@@ -18,28 +18,25 @@ export interface Rule<T = any> {
   validator: (value: T) => boolean | Promise<boolean>;
 }
 
-export type RuleNames = keyof Rule;
-
-export interface Config<T extends object, K extends keyof T>
-  extends Partial<Rule<T[K]>> {
+export interface RuleConfig<T> extends Partial<Rule<T>> {
   message:
     | string
-    | ((param: Rule[RuleNames], value: T[K], rule: RuleNames) => string);
+    | ((param: Rule[keyof Rule], value: T, rule: keyof Rule) => string);
 }
 
 export type Rules<T extends object> = {
-  [K in keyof T]: Config<T, K> | Config<T, K>[];
-};
+  [K in keyof T]: RuleConfig<T[K]> | RuleConfig<T[K]>[]
+}
 
 export type Validators = {
-  [K in RuleNames]: (param: Rule[K], value: any) => boolean | Promise<boolean>;
-};
+  [K in keyof Rule]: (param: Rule[K], value: any) => boolean | Promise<boolean>;
+}
 
-export interface ValidateError<T extends object, K extends keyof T = keyof T> {
-  field: K;
-  value: T[K];
-  rule: RuleNames;
-  param: Rule[RuleNames];
+export interface ValidateError<T extends object> {
+  field: keyof T;
+  value: any;
+  rule: keyof Rule;
+  param: any;
   message: string;
 }
 
