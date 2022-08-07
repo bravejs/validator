@@ -9,32 +9,32 @@ JavaScript data validator, supporting custom asynchronous validation based on pr
  * Define validation rules
  */
 const validator = new Validator({
-    // Sync rules
-    nickname: { required: true, message: 'Nickname is requried' },
-    account: [
-      { required: true, message: "Account is required" },
-      { min: 6, message: 'Account must have more than 6 characters' },
-      {
-        validator (account: string) {
-          return account.length <= 16; // max=16
-        },
-        message: 'Account must be under 16 characters'
-      }
-      // more rules...
-    ],
-
-    // Custom async rules
-    password: {
-      validator (password: string) {
-        return new Promise((resolve) => {
-          setTimeout(() => {
-            resolve(password === '123456');
-          }, 1000);
-        })
+  // Sync rules
+  nickname: { required: true, message: 'Nickname is requried' },
+  account: [
+    { required: true, message: "Account is required" },
+    { min: 6, message: 'Account must have more than 6 characters' },
+    {
+      validator (account: string) {
+        return account.length <= 16; // max=16
       },
-      message: 'Wrong password'
+      message: 'Account must be under 16 characters'
     }
-  });
+    // more rules...
+  ],
+
+  // Custom async rules
+  password: {
+    validator (password: string) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(password === '123456');
+        }, 1000);
+      })
+    },
+    message: 'Wrong password'
+  }
+});
 
 /**
  * Validate
