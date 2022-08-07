@@ -19,18 +19,14 @@ export interface Rule<T = any> {
 export interface RuleConfig<T> extends Partial<Rule<T>> {
   message:
     | string
-    | ((rule: keyof Rule, param: Rule[keyof Rule], value: T) => string);
+    | (<K extends keyof Rule>(rule: K, param: Rule[K], value: T) => string);
 }
 
 export type Rules<T extends object> = {
   [K in keyof T]: RuleConfig<T[K]> | RuleConfig<T[K]>[]
 }
 
-export type Validators = {
-  [K in keyof Rule]: (param: Rule[K], value: any) => boolean | Promise<boolean>;
-}
-
-export interface ValidateError<T extends object> {
+export interface ValidationError<T extends object> {
   field: keyof T;
   value: any;
   rule: keyof Rule;
@@ -38,12 +34,16 @@ export interface ValidateError<T extends object> {
   message: string;
 }
 
+export interface Invalid<T extends object> {
+  valid: false;
+  errors: ValidationError<T>[];
+}
+
 export interface Valid<T extends object> {
   valid: true;
   data: T;
 }
 
-export interface Invalid<T extends object> {
-  valid: false;
-  errors: ValidateError<T>[];
+export type Validators = {
+  [K in keyof Rule]: (param: Rule[K], value: any) => boolean | Promise<boolean>;
 }
