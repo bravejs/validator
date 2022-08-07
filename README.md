@@ -91,7 +91,7 @@ interface Rule<T = any> {
 interface RuleConfig<T> extends Partial<Rule<T>> {
   message:
     | string
-    | ((rule: keyof Rule, param: Rule[keyof Rule], value: T) => string);
+    | (<K extends keyof Rule>(rule: K, param: Rule[K], value: T) => string);
 }
 
 type Rules<T extends object> = {
