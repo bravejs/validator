@@ -1,12 +1,13 @@
 import {
-  Config,
   Invalid,
-  RuleNames,
+  Rule,
+  RuleConfig,
   Rules,
   Valid,
   ValidateError,
 } from './types';
 import VALIDATORS from './validators';
+import { isFn, isObj } from './utils';
 
 class Validator<T extends object> {
   private _rules: Rules<T>;
@@ -15,12 +16,16 @@ class Validator<T extends object> {
     this._rules = rules;
   }
 
-  validate(data: T) {
+  validate<D extends Partial<T>>(data: D) {
+    const { _rules } = this;
     const tasks: Promise<void>[] = [];
-    const errors: ValidateError<T>[] = [];
+    const errors: ValidateError<D>[] = [];
 
-    const validate = <K extends keyof T>(field: K, config: Config<T, K>) => {
-      const value = data[field];
+    const validate = <K extends keyof D>(
+      field: K,
+      config: RuleConfig<D[K]>
+    ) => {
+      const value = data[field]!;
       const message = config.message;
 
       for (const configKey in config) {
@@ -28,54 +33,64 @@ class Validator<T extends object> {
           continue;
         }
 
-        const rule = configKey as RuleNames;
-        const param = config[rule];
-        const result = VALIDATORS[rule](param as never, value);
+        const rule = configKey as keyof Rule;
+        const validator = VALIDATORS[rule];
 
-        const pushError = (res: boolean) => {
-          res ||
+        if (!isFn(validator)) {
+          continue;
+        }
+
+        const param = config[rule];
+        const result = validator(param as never, value);
+
+        const checkResult = (res: boolean) => {
+          if (!res) {
             errors.push({
               field,
               value,
               rule,
               param,
-              message:
-                typeof message === 'function'
-                  ? message(param, value, rule)
-                  : message,
+              message: isFn(message) ? message(param, value, rule) : message,
             });
+          }
         };
 
-        if (typeof result === 'object') {
-          tasks.push(result.then(pushError));
+        if (isObj(result)) {
+          isFn(result.then) && tasks.push(result.then(checkResult));
         } else {
-          pushError(result);
+          checkResult(result);
         }
       }
     };
 
-    for (const dataKey in data) {
-      const rule = this._rules[dataKey];
-
-      if (rule) {
-        if (Array.isArray(rule)) {
-          for (const ruleElement of rule) {
-            validate(dataKey, ruleElement);
-          }
-        } else {
-          validate(dataKey, rule);
-        }
-      }
-    }
-
-    return new Promise<Valid<T> | Invalid<T>>((resolve, reject) => {
+    return new Promise<Invalid<D> | Valid<D>>((resolve, reject) => {
       const check = () => {
         resolve(
           errors.length ? { valid: false, errors } : { valid: true, data }
         );
       };
 
-      tasks.length ? Promise.all(tasks).then(check, reject) : check();
+      for (const dataKey in data) {
+        const config = (_rules as any)[dataKey];
+
+        if (!config) {
+          continue;
+        }
+
+        if (Array.isArray(config)) {
+          for (const configElement of config) {
+            validate(dataKey, configElement);
+          }
+        } else {
+          validate(dataKey, config);
+        }
+      }
+
+      if (tasks.length) {
+        Promise.all(tasks).then(check, reject);
+      } else {
+        check();
+      }
     });
   }
 }
